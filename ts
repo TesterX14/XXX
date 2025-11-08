@@ -224,6 +224,42 @@ local function MakeDraggable(topbarobject, object)
     CustomPos(topbarobject, object)
 end
 
+function CircleClick(Button, X, Y)
+    spawn(function()
+        Button.ClipsDescendants = true
+        local Circle = Instance.new("ImageLabel")
+        Circle.Image = "rbxassetid://266543268"
+        Circle.ImageColor3 = Color3.fromRGB(80, 80, 80)
+        Circle.ImageTransparency = 0.8999999761581421
+        Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Circle.BackgroundTransparency = 1
+        Circle.ZIndex = 10
+        Circle.Name = "Circle"
+        Circle.Parent = Button
+
+        local NewX = X - Circle.AbsolutePosition.X
+        local NewY = Y - Circle.AbsolutePosition.Y
+        Circle.Position = UDim2.new(0, NewX, 0, NewY)
+        local Size = 0
+        if Button.AbsoluteSize.X > Button.AbsoluteSize.Y then
+            Size = Button.AbsoluteSize.X * 1.5
+        elseif Button.AbsoluteSize.X < Button.AbsoluteSize.Y then
+            Size = Button.AbsoluteSize.Y * 1.5
+        elseif Button.AbsoluteSize.X == Button.AbsoluteSize.Y then
+            Size = Button.AbsoluteSize.X * 1.5
+        end
+
+        local Time = 0.5
+        Circle:TweenSizeAndPosition(UDim2.new(0, Size, 0, Size), UDim2.new(0.5, -Size / 2, 0.5, -Size / 2), "Out", "Quad",
+            Time, false, nil)
+        for i = 1, 10 do
+            Circle.ImageTransparency = Circle.ImageTransparency + 0.01
+            wait(Time / 10)
+        end
+        Circle:Destroy()
+    end)
+end
+
 local Chloex = {}
 function Chloex:MakeNotify(NotifyConfig)
     local NotifyConfig = NotifyConfig or {}
@@ -431,42 +467,6 @@ function chloex(msg, delay, color, title, desc)
         Color = color or Color3.fromRGB(0, 208, 255),
         Delay = delay or 4
     })
-end
-
-function CircleClick(Button, X, Y)
-    spawn(function()
-        Button.ClipsDescendants = true
-        local Circle = Instance.new("ImageLabel")
-        Circle.Image = "rbxassetid://266543268"
-        Circle.ImageColor3 = Color3.fromRGB(80, 80, 80)
-        Circle.ImageTransparency = 0.8999999761581421
-        Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Circle.BackgroundTransparency = 1
-        Circle.ZIndex = 10
-        Circle.Name = "Circle"
-        Circle.Parent = Button
-
-        local NewX = X - Circle.AbsolutePosition.X
-        local NewY = Y - Circle.AbsolutePosition.Y
-        Circle.Position = UDim2.new(0, NewX, 0, NewY)
-        local Size = 0
-        if Button.AbsoluteSize.X > Button.AbsoluteSize.Y then
-            Size = Button.AbsoluteSize.X * 1.5
-        elseif Button.AbsoluteSize.X < Button.AbsoluteSize.Y then
-            Size = Button.AbsoluteSize.Y * 1.5
-        elseif Button.AbsoluteSize.X == Button.AbsoluteSize.Y then
-            Size = Button.AbsoluteSize.X * 1.5
-        end
-
-        local Time = 0.5
-        Circle:TweenSizeAndPosition(UDim2.new(0, Size, 0, Size), UDim2.new(0.5, -Size / 2, 0.5, -Size / 2), "Out", "Quad",
-            Time, false, nil)
-        for i = 1, 10 do
-            Circle.ImageTransparency = Circle.ImageTransparency + 0.01
-            wait(Time / 10)
-        end
-        Circle:Destroy()
-    end)
 end
 
 function Chloex:Window(GuiConfig)
@@ -865,7 +865,7 @@ function Chloex:Window(GuiConfig)
         end)
     end)
 
-    local ToggleKey = Enum.KeyCode.Backquote
+    local ToggleKey = Enum.KeyCode.F3
     UserInputService.InputBegan:Connect(function(input, gpe)
         if gpe then return end
         if input.KeyCode == ToggleKey then
