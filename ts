@@ -1,44 +1,45 @@
 local HttpService = game:GetService("HttpService")
 
-if not isfolder("Chloe X") then
-    makefolder("Chloe X")
+if not isfolder("Chloe X") then makefolder("Chloe X") end
+if not isfolder("Chloe X/Config") then makefolder("Chloe X/Config") end
+
+local gameName = tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name)
+gameName = gameName:gsub("[^%w_ ]", ""):gsub("%s+", "_")
+
+local ConfigFolder = "Chloe X/Config"
+local DefaultFile = ConfigFolder .. "/Chloe_" .. gameName .. ".json"
+
+ConfigData = {}
+Elements = {}
+CURRENT_VERSION = CURRENT_VERSION or 1
+_G.AutoSaveEnabled = true
+_G.CurrentConfig = gameName
+
+local function GetConfigPath(name)
+    return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
 end
-if not isfolder("Chloe X/Config") then
-    makefolder("Chloe X/Config")
-end
 
-local gameName   = tostring(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name)
-gameName         = gameName:gsub("[^%w_ ]", "")
-gameName         = gameName:gsub("%s+", "_")
-
-local ConfigFile = "Chloe X/Config/Chloe_" .. gameName .. ".json"
-
-ConfigData       = {}
-Elements         = {}
-CURRENT_VERSION  = nil
-
-function SaveConfig()
+function SaveConfig(force)
+    if not _G.AutoSaveEnabled and not force then return end
     if writefile then
         ConfigData._version = CURRENT_VERSION
-        writefile(ConfigFile, HttpService:JSONEncode(ConfigData))
+        local path = GetConfigPath(_G.CurrentConfig)
+        writefile(path, HttpService:JSONEncode(ConfigData))
+        print("[Chloe X] 💾 Saved:", path)
     end
 end
 
-function LoadConfigFromFile()
-    if not CURRENT_VERSION then return end
-    if isfile and isfile(ConfigFile) then
-        local success, result = pcall(function()
-            return HttpService:JSONDecode(readfile(ConfigFile))
-        end)
-        if success and type(result) == "table" then
-            if result._version == CURRENT_VERSION then
-                ConfigData = result
-            else
-                ConfigData = { _version = CURRENT_VERSION }
-            end
-        else
-            ConfigData = { _version = CURRENT_VERSION }
-        end
+function LoadConfigFromFile(name)
+    local path = GetConfigPath(name or _G.CurrentConfig)
+    if not isfile(path) then
+        ConfigData = { _version = CURRENT_VERSION }
+        return
+    end
+    local ok, result = pcall(function()
+        return HttpService:JSONDecode(readfile(path))
+    end)
+    if ok and type(result) == "table" and result._version == CURRENT_VERSION then
+        ConfigData = result
     else
         ConfigData = { _version = CURRENT_VERSION }
     end
@@ -49,6 +50,39 @@ function LoadConfigElements()
         if ConfigData[key] ~= nil and element.Set then
             element:Set(ConfigData[key], true)
         end
+    end
+end
+
+function ListConfigs()
+    local list = {}
+    for _, file in ipairs(listfiles(ConfigFolder)) do
+        if file:match("%.json$") and not file:find("_autoload") then
+            local name = file:match("Chloe_(.+)%.json$")
+            if name then table.insert(list, name) end
+        end
+    end
+    return list
+end
+
+function SaveConfigAs(name)
+    name = name or _G.CurrentConfig
+    _G.CurrentConfig = name
+    SaveConfig(true)
+end
+
+function LoadConfigAs(name)
+    if not name then return end
+    LoadConfigFromFile(name)
+    LoadConfigElements()
+    _G.CurrentConfig = name
+end
+
+function DeleteConfig(name)
+    if not name then return end
+    local path = GetConfigPath(name)
+    if isfile(path) then
+        delfile(path)
+        print("[Chloe X] 🗑 Deleted:", path)
     end
 end
 
