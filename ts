@@ -16,76 +16,82 @@ _G.CurrentConfig = gameName
 _G.AutoSaveEnabled = _G.AutoSaveEnabled or false
 
 local function GetConfigPath(name)
-    return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
+	return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
 end
 
 function SaveConfig(force)
-    if not _G.AutoSaveEnabled and not force then return end
-    if writefile then
-        ConfigData._version = CURRENT_VERSION
-        ConfigData.AutoSave = _G.AutoSaveEnabled
-        local path = GetConfigPath(_G.CurrentConfig)
-        writefile(path, HttpService:JSONEncode(ConfigData))
-        print("[Chloe X] Saved:", path)
-    end
+	if not _G.AutoSaveEnabled and not force then return end
+	if writefile then
+		ConfigData._version = CURRENT_VERSION
+		ConfigData.AutoSave = _G.AutoSaveEnabled
+		local path = GetConfigPath(_G.CurrentConfig)
+		writefile(path, HttpService:JSONEncode(ConfigData))
+		print("[Chloe X] Saved:", path)
+	end
 end
 
 function LoadConfigFromFile(name)
-    local path = GetConfigPath(name or _G.CurrentConfig)
-    if not isfile(path) then
-        ConfigData = { _version = CURRENT_VERSION }
-        return
-    end
-    local ok, result = pcall(function()
-        return HttpService:JSONDecode(readfile(path))
-    end)
-    if ok and type(result) == "table" and result._version == CURRENT_VERSION then
-        ConfigData = result
-        _G.AutoSaveEnabled = result.AutoSave or false
-    else
-        ConfigData = { _version = CURRENT_VERSION }
-    end
+	local path = GetConfigPath(name or _G.CurrentConfig)
+	if not isfile(path) then
+		ConfigData = { _version = CURRENT_VERSION }
+		return
+	end
+	local ok, result = pcall(function()
+		return HttpService:JSONDecode(readfile(path))
+	end)
+	if ok and type(result) == "table" and result._version == CURRENT_VERSION then
+		ConfigData = result
+		_G.AutoSaveEnabled = result.AutoSave or false
+	else
+		ConfigData = { _version = CURRENT_VERSION }
+	end
 end
 
 function LoadConfigElements()
-    for key, element in pairs(Elements) do
-        if ConfigData[key] ~= nil and element.Set then
-            element:Set(ConfigData[key], true)
-        end
-    end
+	for key, element in pairs(Elements) do
+		if ConfigData[key] ~= nil and element.Set then
+			element:Set(ConfigData[key], true)
+		end
+	end
 end
 
 function ListConfigs()
-    local list = {}
-    for _, file in ipairs(listfiles(ConfigFolder)) do
-        if file:match("%.json$") and not file:find("_autoload") then
-            local name = file:match("Chloe_(.+)%.json$")
-            if name then table.insert(list, name) end
-        end
-    end
-    return list
+	local list = {}
+	for _, file in ipairs(listfiles(ConfigFolder)) do
+		if file:match("%.json$") and not file:find("_autoload") then
+			local name = file:match("Chloe_(.+)%.json$")
+			if name then table.insert(list, name) end
+		end
+	end
+	return list
 end
 
 function SaveConfigAs(name)
-    name = name or _G.CurrentConfig
-    _G.CurrentConfig = name
-    SaveConfig(true)
+	name = name or _G.CurrentConfig
+	_G.CurrentConfig = name
+	SaveConfig(true)
+	if ConfigDropdown and ConfigDropdown.SetValues then
+		ConfigDropdown:SetValues(ListConfigs())
+	end
 end
 
 function LoadConfigAs(name)
-    if not name then return end
-    LoadConfigFromFile(name)
-    LoadConfigElements()
-    _G.CurrentConfig = name
+	if not name then return end
+	LoadConfigFromFile(name)
+	LoadConfigElements()
+	_G.CurrentConfig = name
 end
 
 function DeleteConfig(name)
-    if not name then return end
-    local path = GetConfigPath(name)
-    if isfile(path) then
-        delfile(path)
-        print("[Chloe X] Deleted:", path)
-    end
+	if not name then return end
+	local path = GetConfigPath(name)
+	if isfile(path) then
+		delfile(path)
+		print("[Chloe X] Deleted:", path)
+		if ConfigDropdown and ConfigDropdown.SetValues then
+			ConfigDropdown:SetValues(ListConfigs())
+		end
+	end
 end
 
 local Icons = {
