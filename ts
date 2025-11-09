@@ -8,6 +8,7 @@ gameName = gameName:gsub("[^%w_ ]", ""):gsub("%s+", "_")
 
 local ConfigFolder = "Chloe X/Config"
 local DefaultFile = ConfigFolder .. "/Chloe_" .. gameName .. ".json"
+local AutoLoadFile = ConfigFolder .. "/_autoload.json"
 
 ConfigData = {}
 Elements = {}
@@ -19,6 +20,22 @@ local function GetConfigPath(name)
 	return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
 end
 
+local function SaveAutoLoad(name)
+	writefile(AutoLoadFile, HttpService:JSONEncode({ name = name }))
+end
+
+local function GetAutoLoadName()
+	if isfile(AutoLoadFile) then
+		local ok, data = pcall(function()
+			return HttpService:JSONDecode(readfile(AutoLoadFile))
+		end)
+		if ok and data and data.name then
+			return data.name
+		end
+	end
+	return nil
+end
+
 function SaveConfig(force)
 	if not _G.AutoSaveEnabled and not force then return end
 	if writefile then
@@ -26,7 +43,6 @@ function SaveConfig(force)
 		ConfigData.AutoSave = _G.AutoSaveEnabled
 		local path = GetConfigPath(_G.CurrentConfig)
 		writefile(path, HttpService:JSONEncode(ConfigData))
-		print("[Chloe X] Saved:", path)
 	end
 end
 
@@ -87,11 +103,17 @@ function DeleteConfig(name)
 	local path = GetConfigPath(name)
 	if isfile(path) then
 		delfile(path)
-		print("[Chloe X] Deleted:", path)
 		if ConfigDropdown and ConfigDropdown.SetValues then
 			ConfigDropdown:SetValues(ListConfigs())
 		end
 	end
+end
+
+local last = GetAutoLoadName()
+if last and isfile(GetConfigPath(last)) then
+	LoadConfigAs(last)
+else
+	LoadConfigAs(_G.CurrentConfig)
 end
 
 local Icons = {
