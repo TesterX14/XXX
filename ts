@@ -31,20 +31,24 @@ function SaveConfig(force)
 end
 
 function LoadConfigFromFile(name)
-	local path = GetConfigPath(name or _G.CurrentConfig)
-	if not isfile(path) then
-		ConfigData = { _version = CURRENT_VERSION }
-		return
-	end
-	local ok, result = pcall(function()
-		return HttpService:JSONDecode(readfile(path))
-	end)
-	if ok and type(result) == "table" and result._version == CURRENT_VERSION then
-		ConfigData = result
-		_G.AutoSaveEnabled = result.AutoSave or false
-	else
-		ConfigData = { _version = CURRENT_VERSION }
-	end
+    local path = GetConfigPath(name or _G.CurrentConfig)
+    if not isfile(path) then
+        ConfigData = { _version = CURRENT_VERSION }
+        return
+    end
+    local ok, result = pcall(function()
+        return HttpService:JSONDecode(readfile(path))
+    end)
+    if ok and type(result) == "table" and result._version == CURRENT_VERSION then
+        ConfigData = result
+        if result.AutoSave ~= nil then
+            _G.AutoSaveEnabled = result.AutoSave
+        else
+            _G.AutoSaveEnabled = false
+        end
+    else
+        ConfigData = { _version = CURRENT_VERSION }
+    end
 end
 
 function LoadConfigElements()
