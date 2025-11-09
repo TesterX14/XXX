@@ -21,7 +21,11 @@ local function GetConfigPath(name)
 end
 
 local function SaveAutoLoad(name)
-	writefile(AutoLoadFile, HttpService:JSONEncode({ name = name }))
+	if name and name ~= "" then
+		writefile(AutoLoadFile, HttpService:JSONEncode({ name = name }))
+	else
+		if isfile(AutoLoadFile) then delfile(AutoLoadFile) end
+	end
 end
 
 local function GetAutoLoadName()
@@ -85,6 +89,7 @@ end
 function SaveConfigAs(name)
 	name = name or _G.CurrentConfig
 	_G.CurrentConfig = name
+	SaveAutoLoad(name)
 	SaveConfig(true)
 	if ConfigDropdown and ConfigDropdown.SetValues then
 		ConfigDropdown:SetValues(ListConfigs())
@@ -96,6 +101,7 @@ function LoadConfigAs(name)
 	LoadConfigFromFile(name)
 	LoadConfigElements()
 	_G.CurrentConfig = name
+	SaveAutoLoad(name)
 end
 
 function DeleteConfig(name)
