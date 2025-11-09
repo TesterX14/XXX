@@ -41,10 +41,8 @@ function LoadConfigFromFile(name)
     end)
     if ok and type(result) == "table" and result._version == CURRENT_VERSION then
         ConfigData = result
-        if result.AutoSave ~= nil then
+        if result.AutoSave ~= nil and _G.AutoSaveEnabled == nil then
             _G.AutoSaveEnabled = result.AutoSave
-        else
-            _G.AutoSaveEnabled = false
         end
     else
         ConfigData = { _version = CURRENT_VERSION }
