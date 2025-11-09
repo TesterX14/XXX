@@ -8,13 +8,13 @@ gameName = gameName:gsub("[^%w_ ]", ""):gsub("%s+", "_")
 
 local ConfigFolder = "Chloe X/Config"
 local DefaultFile = ConfigFolder .. "/Chloe_" .. gameName .. ".json"
+local AutoLoadFile = ConfigFolder .. "/_lastconfig.json"
 
 ConfigData = {}
 Elements = {}
 CURRENT_VERSION = CURRENT_VERSION or 1
 _G.CurrentConfig = gameName
 _G.AutoSaveEnabled = _G.AutoSaveEnabled or false
-_G.SelectedConfig = _G.SelectedConfig or nil
 
 local function GetConfigPath(name)
 	return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
@@ -79,11 +79,29 @@ function SaveConfigAs(name)
 	end
 end
 
+local function SetLastConfig(name)
+    if not name or name == "" then return end
+    writefile(AutoLoadFile, HttpService:JSONEncode({ last = name }))
+end
+
+local function GetLastConfig()
+    if isfile(AutoLoadFile) then
+        local ok, data = pcall(function()
+            return HttpService:JSONDecode(readfile(AutoLoadFile))
+        end)
+        if ok and data and data.last then
+            return data.last
+        end
+    end
+    return nil
+end
+
 function LoadConfigAs(name)
 	if not name then return end
 	LoadConfigFromFile(name)
 	LoadConfigElements()
 	_G.CurrentConfig = name
+	SetLastConfig(name)
 end
 
 function DeleteConfig(name)
@@ -97,7 +115,7 @@ function DeleteConfig(name)
 	end
 end
 
-local last = _G.SelectedConfig
+local last = GetLastConfig()
 if last and isfile(GetConfigPath(last)) then
 	LoadConfigAs(last)
 else
