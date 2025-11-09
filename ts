@@ -12,8 +12,8 @@ local DefaultFile = ConfigFolder .. "/Chloe_" .. gameName .. ".json"
 ConfigData = {}
 Elements = {}
 CURRENT_VERSION = CURRENT_VERSION or 1
-_G.AutoSaveEnabled = true
 _G.CurrentConfig = gameName
+_G.AutoSaveEnabled = _G.AutoSaveEnabled or false
 
 local function GetConfigPath(name)
     return ConfigFolder .. "/Chloe_" .. (name or gameName) .. ".json"
@@ -23,9 +23,10 @@ function SaveConfig(force)
     if not _G.AutoSaveEnabled and not force then return end
     if writefile then
         ConfigData._version = CURRENT_VERSION
+        ConfigData.AutoSave = _G.AutoSaveEnabled
         local path = GetConfigPath(_G.CurrentConfig)
         writefile(path, HttpService:JSONEncode(ConfigData))
-        print("[Chloe X] 💾 Saved:", path)
+        print("[Chloe X] Saved:", path)
     end
 end
 
@@ -40,6 +41,7 @@ function LoadConfigFromFile(name)
     end)
     if ok and type(result) == "table" and result._version == CURRENT_VERSION then
         ConfigData = result
+        _G.AutoSaveEnabled = result.AutoSave or false
     else
         ConfigData = { _version = CURRENT_VERSION }
     end
@@ -82,7 +84,7 @@ function DeleteConfig(name)
     local path = GetConfigPath(name)
     if isfile(path) then
         delfile(path)
-        print("[Chloe X] 🗑 Deleted:", path)
+        print("[Chloe X] Deleted:", path)
     end
 end
 
