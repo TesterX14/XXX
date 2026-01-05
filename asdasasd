@@ -1,7 +1,6 @@
 --// credit: ChloeX
 --// modified: .badmagazine
 
-
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -737,11 +736,11 @@ function Chloex:Window(GuiConfig)
 	GuiConfig.Color = GuiConfig.Color or Color3.fromRGB(0, 208, 255)
 	GuiConfig["Tab Width"] = GuiConfig["Tab Width"] or 120
 	GuiConfig.Version = GuiConfig.Version or 1
-	
+
 	local folderName = GuiConfig.Folder or GuiConfig.Title:gsub("[^%w_ ]", ""):gsub("%s+", "_")
 	gameFolder = "Chloe X/" .. folderName
 	AutoloadFile = gameFolder .. "/autoload.txt"
-	
+
 	if not isfolder(gameFolder) then
 		makefolder(gameFolder)
 	end
@@ -2015,8 +2014,8 @@ function Chloex:Window(GuiConfig)
 				ButtonConfig.SubTitle = ButtonConfig.SubTitle or nil
 				ButtonConfig.SubCallback = ButtonConfig.SubCallback or function() end
 
-				local ICON_IDLE = "rbxassetid://11128718799"
-				local ICON_CLICK = "rbxassetid://6860051781"
+				local ICON_IDLE = "rbxassetid://115552801804948"
+				local ICON_CLICK = "rbxassetid://71771678979400"
 
 				local Button = Instance.new("Frame")
 				Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2024,10 +2023,7 @@ function Chloex:Window(GuiConfig)
 				Button.Size = UDim2.new(1, 0, 0, 40)
 				Button.LayoutOrder = CountItem
 				Button.Parent = SectionAdd
-
-				local UICorner = Instance.new("UICorner")
-				UICorner.CornerRadius = UDim.new(0, 4)
-				UICorner.Parent = Button
+				Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 4)
 
 				local MainButton = Instance.new("TextButton")
 				MainButton.Font = Enum.Font.GothamBold
@@ -2041,12 +2037,8 @@ function Chloex:Window(GuiConfig)
 				MainButton.Position = UDim2.new(0, 6, 0, 5)
 				MainButton.Parent = Button
 				MainButton.AutoButtonColor = false
-				MainButton.TextXAlignment = Enum.TextXAlignment.Center
-				MainButton.TextYAlignment = Enum.TextYAlignment.Center
-
-				local mainCorner = Instance.new("UICorner")
-				mainCorner.CornerRadius = UDim.new(0, 4)
-				mainCorner.Parent = MainButton
+				MainButton.ClipsDescendants = true
+				Instance.new("UICorner", MainButton).CornerRadius = UDim.new(0, 4)
 
 				local Icon = Instance.new("ImageLabel")
 				Icon.BackgroundTransparency = 1
@@ -2056,24 +2048,48 @@ function Chloex:Window(GuiConfig)
 				Icon.Image = ICON_IDLE
 				Icon.Parent = MainButton
 
-				local function flash(btn, icon)
+				local Aurora = Instance.new("ImageLabel")
+				Aurora.BackgroundTransparency = 1
+				Aurora.Size = UDim2.new(2, 0, 2, 0)
+				Aurora.Position = UDim2.new(-0.5, 0, -0.5, 0)
+				Aurora.Image = "rbxassetid://5553946656"
+				Aurora.ImageTransparency = 1
+				Aurora.ZIndex = MainButton.ZIndex + 1
+				Aurora.Parent = MainButton
+
+				local Gradient = Instance.new("UIGradient")
+				Gradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 200, 255)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 120, 255)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 255, 220)),
+				})
+				Gradient.Parent = Aurora
+
+				local function auroraFlash(btn, icon)
 					if icon then
 						icon.Image = ICON_CLICK
 					end
+					Aurora.ImageTransparency = 0.25
+					Gradient.Rotation = math.random(0, 360)
 
-					TweenService:Create(
-						btn,
-						TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-						{ BackgroundTransparency = 0.85 }
-					):Play()
+					TweenService:Create(Aurora, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						ImageTransparency = 0.85,
+					}):Play()
 
-					task.delay(0.12, function()
-						TweenService:Create(
-							btn,
-							TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-							{ BackgroundTransparency = 0.935 }
-						):Play()
+					TweenService:Create(Gradient, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {
+						Rotation = Gradient.Rotation + 120,
+					}):Play()
 
+					TweenService:Create(btn, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						BackgroundTransparency = 0.85,
+					}):Play()
+
+					task.delay(0.15, function()
+						TweenService
+							:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								BackgroundTransparency = 0.935,
+							})
+							:Play()
 						if icon then
 							icon.Image = ICON_IDLE
 						end
@@ -2081,7 +2097,7 @@ function Chloex:Window(GuiConfig)
 				end
 
 				MainButton.MouseButton1Down:Connect(function()
-					flash(MainButton, Icon)
+					auroraFlash(MainButton, Icon)
 				end)
 
 				MainButton.MouseButton1Click:Connect(ButtonConfig.Callback)
@@ -2101,19 +2117,17 @@ function Chloex:Window(GuiConfig)
 					SubButton.Position = UDim2.new(0.5, 2, 0, 5)
 					SubButton.Parent = Button
 					SubButton.AutoButtonColor = false
-
-					local subCorner = Instance.new("UICorner")
-					subCorner.CornerRadius = UDim.new(0, 4)
-					subCorner.Parent = SubButton
+					SubButton.ClipsDescendants = true
+					Instance.new("UICorner", SubButton).CornerRadius = UDim.new(0, 4)
 
 					SubButton.MouseButton1Down:Connect(function()
-						flash(SubButton)
+						auroraFlash(SubButton)
 					end)
 
 					SubButton.MouseButton1Click:Connect(ButtonConfig.SubCallback)
 				end
 
-				CountItem = CountItem + 1
+				CountItem += 1
 			end
 
 			function Items:AddToggle(ToggleConfig)
